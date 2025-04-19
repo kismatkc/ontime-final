@@ -1,0 +1,66 @@
+# Native directories (full exclusion)
+/android/
+/ios/
+
+# General
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.local
+*.backup
+*.bak
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.pnp.js
+*.tsbuildinfo
+
+# Expo
+.expo/
+.expo-shared/
+web-build/
+dist/
+.expo/web/
+
+# Build artifacts
+*.apk
+*.aab
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.jsbundle
+*.aab
+
+# IDEs
+.idea/
+.vscode/
+.settings/
+*.iml
+*.sublime-workspace
+
+# Testing
+coverage/
+
+# EAS
+eas-hooks/
+
+# Cache/Generated files
+.metro-cache
+.cache/
+*.tmp
+*.temp
+
+# macOS
+._*
+
+# Windows
+[Tt]humbs.db
+Desktop.ini
+
+# Linux
+*~
