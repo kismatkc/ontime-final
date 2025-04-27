@@ -1,5 +1,5 @@
 import "~/global.css";
-import { SafeAreaView, TouchableOpacity, View } from "react-native";
+import { SafeAreaView, Text, TouchableOpacity, View } from "react-native";
 import { ThemeToggle } from "~/components/ThemeToggle";
 import {
   DarkTheme,
@@ -7,6 +7,7 @@ import {
   Theme,
   ThemeProvider,
 } from "@react-navigation/native";
+
 import TrackPlayer from "react-native-track-player";
 
 import Toast from "react-native-toast-message";
@@ -18,7 +19,6 @@ import { useColorScheme } from "~/lib/useColorScheme";
 import { PortalHost } from "@rn-primitives/portal";
 import { setAndroidNavigationBar } from "~/lib/android-navigation-bar";
 import { ArrowLeft } from "lucide-react-native";
-import playbackService from "~/lib/service";
 
 const useIsomorphicLayoutEffect =
   Platform.OS === "web" && typeof window === "undefined"
@@ -60,17 +60,6 @@ export default function RootLayout() {
     hasMounted.current = true;
   }, []);
 
-  // React.useEffect(() => {
-  //   (async function () {
-  //     try {
-  //       await TrackPlayer.setupPlayer();
-  //       TrackPlayer.registerPlaybackService(() => playbackService);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   })();
-  // }, []);
-
   const handleBackPress = React.useCallback(() => {
     if (pathname !== "/") {
       router.back();
@@ -105,7 +94,7 @@ export default function RootLayout() {
             screenOptions={{
               headerShown: false,
             }}
-            initialRouteName="streaks/index"
+            // initialRouteName="streaks/index"
           />
           <Toast />
 

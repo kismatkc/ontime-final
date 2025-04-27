@@ -1,3 +1,7 @@
-Music section
-1.Two tabs one for donwload and one for playing.Able to play only audio also in player
-2.Lyrsic on float any songs
+what is streak
+fromtoday till we have a gap
+
+maxValue = today
+streak 0
+
+fir iteration

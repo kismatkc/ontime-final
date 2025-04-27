@@ -1,7 +1,14 @@
-import { FlatList, Text, TouchableOpacity, View } from "react-native";
+import {
+  FlatList,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import { Link } from "expo-router";
-import { SafeAreaView } from "react-native";
+import DownloadUpdate from "~/lib/update";
+
 export type TopicTitle =
   | "Sleep"
   | "TTC"
@@ -30,6 +37,9 @@ export const topics: { title: TopicTitle }[] = [
 export default function Home() {
   return (
     <View className="h-full px-3">
+      <View className="flex items-start">
+        <DownloadUpdate />
+      </View>
       <FlatList
         data={topics}
         showsHorizontalScrollIndicator={false}

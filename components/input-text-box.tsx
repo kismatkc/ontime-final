@@ -3,6 +3,8 @@ import { Textarea } from "./ui/textarea";
 import { Copy } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import Pronounce from "./pronounce";
+import { Input } from "./ui/input";
+import { set } from "date-fns";
 
 const InputText = ({
   textAreaOne,
@@ -29,6 +31,7 @@ const InputText = ({
 }) => {
   const [areaOneCopy, setAreaOneCopy] = useState<boolean>(false);
   const [areaTwoCopy, setAreaTwoCopy] = useState<boolean>(false);
+  const [frenchPronounce, setFrenchPronounce] = useState<string>();
 
   useEffect(() => {
     if (translation) {
@@ -43,7 +46,7 @@ const InputText = ({
   };
 
   return (
-    <View className="flex flex-col mt-8 gap-y-8 px-6">
+    <View className="flex flex-col mt-6 gap-y-6 px-6">
       <View
         className="bg-background rounded-2xl mt-8 flex flex-col justify-between"
         style={{ height: "30%" }}
@@ -85,7 +88,7 @@ const InputText = ({
         </TouchableOpacity>
       </View>
       <View
-        className="bg-background rounded-2xl mt-8 flex flex-col justify-between"
+        className="bg-background rounded-2xl mt-2 flex flex-col justify-between"
         style={{ height: "30%" }}
       >
         <View className="grow">
@@ -120,6 +123,23 @@ const InputText = ({
               text={translation || ""}
               targetLanguage={targetLanguage}
             />
+          </View>
+        </View>
+      </View>
+      <View>
+        <Text className="text-lg font-bold">Spell french</Text>
+        <View className="flex flex-row gap-x-3 justify-around items-center mb-1 mt-3">
+          <Input
+            className="flex-1 rounded-md "
+            multiline
+            value={frenchPronounce}
+            onChangeText={(text) => {
+              // Allow setting to empty string
+              setFrenchPronounce(text.trim());
+            }}
+          />
+          <View style={{ opacity: frenchPronounce ? 1 : 0 }}>
+            <Pronounce text={frenchPronounce as string} targetLanguage="fr" />
           </View>
         </View>
       </View>

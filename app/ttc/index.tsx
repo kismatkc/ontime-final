@@ -17,6 +17,7 @@ import axios from "axios";
 import { Button } from "./ui/button";
 import ModifyStops from "../../components/modify-button";
 import { useFetchTtcData } from "~/lib/fetch-datas";
+import ImagePopupComponent from "~/components/ttc-image";
 
 type frequentBus = {
   routeTitle: string;
@@ -64,6 +65,7 @@ export default function TTC() {
                 <Text className="text-3xl font-semibold text-center mt-3 pt-3 self-center text-foreground">
                   Frequently used
                 </Text>
+                {/* <ImagePopupComponent /> */}
                 <ModifyStops />
               </View>
             )}
