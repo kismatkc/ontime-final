@@ -2,7 +2,6 @@ import axios from "axios";
 import { useCallback, useState } from "react";
 import { decode } from "html-entities";
 import { Sound } from "expo-av/build/Audio";
-import { set } from "date-fns";
 
 export function useTranslator() {
   const [translation, setTranslation] = useState<null | string>(null);

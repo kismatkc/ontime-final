@@ -2,7 +2,8 @@ import { Volume2, Turtle } from "lucide-react-native";
 import { useEffect, useState, useRef } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useTranslator } from "~/lib/use-translator";
-import { Audio } from "expo-av";
+import RNFS from "react-native-fs";
+import { useTrackStore } from "~/hooks/useTrackStore";
 
 const Pronounce = ({
   text,
@@ -14,169 +15,194 @@ const Pronounce = ({
   const [isPlayingFast, setIsPlayingFast] = useState<boolean>(false);
   const [isPlayingSlow, setIsPlayingSlow] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const { soundBase64, fetchSound, translation } = useTranslator();
-  const soundRef = useRef<Audio.Sound | null>(null);
-  const isMounted = useRef(true);
+  const { soundBase64, fetchSound } = useTranslator();
   const lastPlayedSpeedRef = useRef<number | null>(null);
   const lastTextRef = useRef<string>("");
   const soundCache = useRef<{ fast: string | null; slow: string | null }>({
     fast: null,
     slow: null,
   });
+  const filePathsRef = useRef<string[]>([]);
 
-  // Reset cache when text changes
+  // Get track player methods from the store
+  const trackPlayer = useTrackStore();
+
+  // Setup track player on component mount
+  useEffect(() => {
+    const setupPlayer = async () => {
+      await trackPlayer.setup();
+    };
+
+    setupPlayer();
+
+    return () => {
+      // Clean up any temporary files on unmount
+      filePathsRef.current.forEach((filePath) => {
+        RNFS.unlink(filePath).catch((err) =>
+          console.error("Error deleting file:", err)
+        );
+      });
+
+      // Stop playback on unmount
+      trackPlayer.clearQueue();
+    };
+  }, []);
+
+  // Reset cache and stop playback when text changes
   useEffect(() => {
     if (text !== lastTextRef.current) {
-      console.log("Text changed, resetting cache");
+      // Delete old temporary files
+      filePathsRef.current.forEach((filePath) => {
+        RNFS.unlink(filePath).catch((err) =>
+          console.error("Error deleting file:", err)
+        );
+      });
+      filePathsRef.current = [];
       soundCache.current = { fast: null, slow: null };
       lastTextRef.current = text;
 
-      // Also reset audio if playing
+      // Stop playback if active
       if (isPlayingFast || isPlayingSlow) {
-        resetAudio();
+        trackPlayer.clearQueue();
+        setIsPlayingFast(false);
+        setIsPlayingSlow(false);
       }
     }
   }, [text, targetLanguage]);
 
-  // Set up component mount/unmount tracking
-  useEffect(() => {
-    isMounted.current = true;
-
-    return () => {
-      isMounted.current = false;
-      // Clean up sound when component unmounts
-      if (soundRef.current) {
-        soundRef.current.unloadAsync();
-        soundRef.current = null;
-      }
-    };
-  }, []);
-
-  // Monitor soundBase64 changes and update cache
+  // Handle new soundBase64 data
   useEffect(() => {
     if (soundBase64 && lastPlayedSpeedRef.current !== null) {
-      // Cache the sound data
-      if (lastPlayedSpeedRef.current === 1) {
-        soundCache.current.fast = soundBase64;
-      } else {
-        soundCache.current.slow = soundBase64;
-      }
+      processSoundData();
+    }
 
-      // Play the sound immediately
-      playSound(soundBase64, lastPlayedSpeedRef.current);
+    async function processSoundData() {
+      try {
+        if (!soundBase64 || lastPlayedSpeedRef.current === null) return;
+
+        const speed = lastPlayedSpeedRef.current;
+        const speedLabel = speed === 1 ? "fast" : "slow";
+        const trackId = `pronunciation-${speedLabel}-${Date.now()}`;
+        const trackTitle = `Pronunciation (${speed === 1 ? "Fast" : "Slow"})`;
+
+        // Play the track using the store's method
+        const filePath = await trackPlayer.playTrackFromBase64(
+          soundBase64,
+          trackId,
+          trackTitle
+        );
+
+        // Store the file path for cleanup
+        filePathsRef.current.push(filePath);
+
+        // Update the cache
+        if (speed === 1) {
+          soundCache.current.fast = filePath;
+        } else {
+          soundCache.current.slow = filePath;
+        }
+
+        // Update UI state
+        setError(null);
+        setIsPlayingFast(speed === 1);
+        setIsPlayingSlow(speed === 0.5);
+
+        // Add a listener for playback completion
+        const checkPlaybackCompletion = setInterval(async () => {
+          const state = await trackPlayer.getCurrentState();
+          if (state !== "playing") {
+            setIsPlayingFast(false);
+            setIsPlayingSlow(false);
+            clearInterval(checkPlaybackCompletion);
+          }
+        }, 500);
+      } catch (err: any) {
+        console.error("Error processing sound data:", err);
+        setError(err.message || "Error playing sound");
+        setIsPlayingFast(false);
+        setIsPlayingSlow(false);
+      }
     }
   }, [soundBase64]);
 
-  // Reset audio playback
-  const resetAudio = async () => {
-    if (soundRef.current) {
-      try {
-        await soundRef.current.stopAsync();
-        await soundRef.current.unloadAsync();
-        soundRef.current = null;
-      } catch (error) {
-        console.error("Error resetting audio:", error);
-      }
-    }
-    setIsPlayingFast(false);
-    setIsPlayingSlow(false);
-  };
-
-  // Play audio with given speed
-  async function playSound(soundData: any, speed: number) {
+  // Handle button presses
+  const handlePress = async (speed: number) => {
     try {
-      setError(null);
-      if (speed === 1) {
-        setIsPlayingFast(true);
-        setIsPlayingSlow(false);
-      } else {
-        setIsPlayingSlow(true);
+      // If the same speed is playing, stop it
+      if ((speed === 1 && isPlayingFast) || (speed === 0.5 && isPlayingSlow)) {
+        await trackPlayer.clearQueue();
         setIsPlayingFast(false);
+        setIsPlayingSlow(false);
+        return;
       }
 
-      // Create a new sound object
-      const newSound = new Audio.Sound();
-      soundRef.current = newSound;
+      // If any speed is playing, stop it first
+      if (isPlayingFast || isPlayingSlow) {
+        await trackPlayer.clearQueue();
+        setIsPlayingFast(false);
+        setIsPlayingSlow(false);
+      }
 
-      // Load the audio from base64
-      await newSound.loadAsync({
-        uri: `data:audio/mp3;base64,${soundData}`,
-      });
+      // Check if we have a cached version
+      const cachedFilePath =
+        speed === 1 ? soundCache.current.fast : soundCache.current.slow;
 
-      // Set up completion callback
-      newSound.setOnPlaybackStatusUpdate((status: any) => {
-        if (status.didJustFinish && isMounted.current) {
+      if (cachedFilePath) {
+        // Read the file and play it
+        try {
+          const base64Data = await RNFS.readFile(cachedFilePath, "base64");
+          const speedLabel = speed === 1 ? "fast" : "slow";
+          const trackId = `pronunciation-${speedLabel}-${Date.now()}`;
+          const trackTitle = `Pronunciation (${speed === 1 ? "Fast" : "Slow"})`;
+
+          await trackPlayer.playTrackFromBase64(
+            base64Data,
+            trackId,
+            trackTitle
+          );
+
+          setIsPlayingFast(speed === 1);
+          setIsPlayingSlow(speed === 0.5);
+          setError(null);
+        } catch (err: any) {
+          console.error("Error playing cached file:", err);
+          setError(err.message || "Error playing cached sound");
+
+          // If there was an error playing the cached file, remove it from cache
           if (speed === 1) {
-            setIsPlayingFast(false);
+            soundCache.current.fast = null;
           } else {
-            setIsPlayingSlow(false);
+            soundCache.current.slow = null;
           }
-        }
-      });
 
-      // Play the sound
-      await Audio.setAudioModeAsync({
-        playsInSilentModeIOS: true,
-      });
-      await newSound.playAsync();
-    } catch (error: any) {
-      console.error("Error playing sound:", error);
-      setError(error.message || "Error playing sound");
+          // Try fetching a new sound instead
+          lastPlayedSpeedRef.current = speed;
+          await fetchSound(text, speed, targetLanguage);
+        }
+      } else {
+        // No cached version, fetch new sound
+        lastPlayedSpeedRef.current = speed;
+        setError(null);
+
+        // Show loading state while we fetch the sound
+        setIsPlayingFast(speed === 1);
+        setIsPlayingSlow(speed === 0.5);
+
+        await fetchSound(text, speed, targetLanguage);
+      }
+    } catch (err: any) {
+      console.error("Error in handlePress:", err);
+      setError(err.message || "Error playing sound");
       setIsPlayingFast(false);
       setIsPlayingSlow(false);
-    }
-  }
-
-  const handlePress = async (speed: number) => {
-    // If this speed is already playing, stop and reset
-    if ((speed === 1 && isPlayingFast) || (speed === 0.5 && isPlayingSlow)) {
-      await resetAudio();
-      return;
-    }
-
-    // If the other speed is playing, stop it first
-    if (isPlayingFast || isPlayingSlow) {
-      await resetAudio();
-    }
-
-    // Check if we have cached sound data for this speed
-    const cachedSound =
-      speed === 1 ? soundCache.current.fast : soundCache.current.slow;
-
-    if (cachedSound) {
-      // Play directly from cache
-      playSound(cachedSound, speed);
-    } else {
-      try {
-        console.log("Fetching audio for", text, targetLanguage, speed);
-
-        // Set temporary loading state
-        if (speed === 0.5) {
-          setIsPlayingSlow(true);
-        } else {
-          setIsPlayingFast(true);
-        }
-
-        // Remember which speed we're fetching
-        lastPlayedSpeedRef.current = speed;
-
-        // Fetch sound data - sound will be played via the useEffect when soundBase64 updates
-        await fetchSound(text, speed, targetLanguage);
-      } catch (error: any) {
-        console.error("Error fetching sound:", error);
-        setError("Failed to fetch audio");
-        setIsPlayingFast(false);
-        setIsPlayingSlow(false);
-      }
     }
   };
 
   return (
-    <View className={`flex flex-row justify-between items-center gap-x-2`}>
+    <View className="flex flex-row justify-between items-center gap-x-2">
       <TouchableOpacity onPress={() => handlePress(1)}>
         <Volume2 color={isPlayingFast ? "green" : "grey"} />
       </TouchableOpacity>
-
       <TouchableOpacity onPress={() => handlePress(0.5)}>
         <Turtle color={isPlayingSlow ? "green" : "grey"} />
       </TouchableOpacity>

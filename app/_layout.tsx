@@ -1,14 +1,13 @@
 import "~/global.css";
 import { SafeAreaView, Text, TouchableOpacity, View } from "react-native";
 import { ThemeToggle } from "~/components/ThemeToggle";
+
 import {
   DarkTheme,
   DefaultTheme,
   Theme,
   ThemeProvider,
 } from "@react-navigation/native";
-
-import TrackPlayer from "react-native-track-player";
 
 import Toast from "react-native-toast-message";
 import { Stack, usePathname, useRouter } from "expo-router";
@@ -19,6 +18,51 @@ import { useColorScheme } from "~/lib/useColorScheme";
 import { PortalHost } from "@rn-primitives/portal";
 import { setAndroidNavigationBar } from "~/lib/android-navigation-bar";
 import { ArrowLeft } from "lucide-react-native";
+
+import * as Location from "expo-location";
+import { useEffect, useState } from "react";
+import { Alert, Linking } from "react-native";
+import { useTrackStore } from "~/hooks/useTrackStore";
+
+// Add this function to your app's initialization
+async function requestAndVerifyLocationPermission() {
+  try {
+    // Check current permission status
+    let { status } = await Location.getForegroundPermissionsAsync();
+
+    // If not granted, request it
+    if (status !== "granted") {
+      const { status: newStatus } =
+        await Location.requestForegroundPermissionsAsync();
+
+      // If still not granted after request, show custom alert
+      if (newStatus !== "granted") {
+        Alert.alert(
+          "Location Permission Required",
+          "This app needs access to your location. Please enable location permissions in your device settings.",
+          [
+            {
+              text: "Open Settings",
+              onPress: () => {
+                Platform.OS === "ios"
+                  ? Linking.openURL("app-settings:")
+                  : Linking.openSettings();
+              },
+            },
+            { text: "Cancel", style: "cancel" },
+          ]
+        );
+        return false;
+      }
+    }
+    return true;
+  } catch (error) {
+    console.error("Error requesting location permission:", error);
+    return false;
+  }
+}
+
+// Call this function before making any location-related API calls
 
 const useIsomorphicLayoutEffect =
   Platform.OS === "web" && typeof window === "undefined"
@@ -45,8 +89,9 @@ export default function RootLayout() {
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = React.useState(false);
   const pathname = usePathname();
   const router = useRouter();
-
+  const { setup: TrackPlayerSingeletonSetup } = useTrackStore();
   useIsomorphicLayoutEffect(() => {
+    requestAndVerifyLocationPermission();
     if (hasMounted.current) {
       return;
     }
@@ -58,6 +103,9 @@ export default function RootLayout() {
     setAndroidNavigationBar(colorScheme);
     setIsColorSchemeLoaded(true);
     hasMounted.current = true;
+
+    // Set up the TrackPlayer singleton
+    TrackPlayerSingeletonSetup();
   }, []);
 
   const handleBackPress = React.useCallback(() => {
@@ -84,17 +132,27 @@ export default function RootLayout() {
                 pointerEvents: showBackButton ? "auto" : "none",
               }}
             >
-              <ArrowLeft size={25} />
+              <ArrowLeft
+                size={25}
+                className="z-[60]"
+                color={
+                  (pathname === "/music" && "white") ||
+                  (pathname === "/streaks" && "white") ||
+                  (colorScheme === "dark" ? "white" : "black")
+                }
+              />
             </TouchableOpacity>
-            <View>
-              <ThemeToggle />
-            </View>
+            {pathname != "/music" && (
+              <View>
+                <ThemeToggle />
+              </View>
+            )}
           </View>
           <Stack
             screenOptions={{
               headerShown: false,
             }}
-            // initialRouteName="streaks/index"
+            initialRouteName="music"
           />
           <Toast />
 

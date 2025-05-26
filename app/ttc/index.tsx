@@ -27,6 +27,7 @@ type frequentBus = {
 export default function TTC() {
   const [time, setTime] = useState<Date>(new Date());
   const { news, busTimings } = useFetchTtcData();
+
   useEffect(() => {
     const timer = setInterval(() => {
       setTime(new Date());
@@ -37,7 +38,10 @@ export default function TTC() {
 
   if (!(news || busTimings))
     return (
-      <View className="h-full ">
+      <View className="flex-1 flex-col ">
+        <View className=" mt-20 self-end mr-2">
+          <ImagePopupComponent />
+        </View>
         <ActivityIndicator size="large" className="relative top-1/4" />
       </View>
     );
@@ -53,20 +57,16 @@ export default function TTC() {
     >
       <View className="flex flex-col ">
         <View>
-          <View className="flex flex-col mt-4 gap-y-2">
-            <Text className="text-4xl font-bold  text-foreground">
-              Current Time is {format(time, "hh:mm aa")}
-            </Text>
-          </View>
-
           <View>
             {busTimings?.length > 0 && (
-              <View className="flex flex-col items-end">
+              <View className="flex flex-col items-end gap-x-4">
                 <Text className="text-3xl font-semibold text-center mt-3 pt-3 self-center text-foreground">
                   Frequently used
                 </Text>
-                {/* <ImagePopupComponent /> */}
                 <ModifyStops />
+                <View className="mt-2">
+                  <ImagePopupComponent />
+                </View>
               </View>
             )}
             <View className="flex flex-row gap-x-2 flex-wrap">

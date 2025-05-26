@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { View, Text, Pressable, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import {
   Select,
   SelectContent,
@@ -11,19 +17,20 @@ import {
 } from "~/components/ui/select";
 import { Calendar } from "react-native-calendars";
 import axios from "axios";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { Check, ChevronDown, Option } from "lucide-react-native";
 import useDecision from "~/components/decision-dialog";
 
 // =============================================
 // CONSTANTS
 // =============================================
-const url = "https://puppeter-kismat-kcs-projects.vercel.app/streaks";
-// const url =
-//   process.env.EXPO_PUBLIC_ENVIRONMENT === "development"
-//     ? "http://localhost:4000/streaks"
-//     : "https://puppeter-kismat-kcs-projects.vercel.app/streaks";
-const minDate = "2025-04-24";
+let url = `${process.env.EXPO_PUBLIC_BACKEND_URL}/streaks`;
+
+if (process.env.EXPO_PUBLIC_ENVIRONMENT === "development") {
+  url = `${process.env.EXPO_PUBLIC_BACKEND_URL}:3000/streaks`;
+}
+
+const minDate = "2025-05-10";
 const totalDays = new Date(2025).getDate();
 const MONTH_NAMES = [
   "January",
@@ -55,10 +62,8 @@ type HabitStatusMap = {
   french: boolean;
   tmad: boolean;
   chew_mew: boolean;
-  spoon: boolean;
   guitar: boolean;
   online_income: boolean;
-  french_immersion: boolean;
   workout: boolean;
   sleep: boolean;
 };
@@ -74,35 +79,76 @@ type stats = {
 // DATA
 // =============================================
 const streakItems: OptionExtended[] = [
-  { label: "1 Hour Minimum French", value: "french" },
-  { label: "Strict TMAD", value: "tmad" },
+  {
+    label: "French(Before 8pm + 1.5h min)",
+    value: "french",
+    conditions: [
+      "See the french section first.",
+      "Only valid if logged before 8pm.",
+      "1.5 hour minimum.",
+      "Watch a video in french/Write something in french.",
+    ],
+  },
+  {
+    label: "TMAD(Max 2)",
+    value: "tmad",
+    conditions: [
+      "Dont eat more than 40gm nuts.",
+      "Avoid naan sometimes its not that exquisite.",
+      "TMAD=Exact 2 meals a day even a naan/chocolate/anything makes it 3.",
+      "Eat with spoon if time.",
+      "Allocate 40 mins for eating.",
+    ],
+  },
   {
     label: "Chewing/Mewing",
     value: "chewing_mewing",
     conditions: [
-      "Chew equally on all sides in one go.",
+      "Chew equally on all sides no gap.",
       "Hard mew every 30 minutes.",
     ],
   },
-  { label: "Eat with Spoon", value: "eat_with_spoon" },
-  { label: "Guitar Practice", value: "guitar" },
-  { label: "Online Income", value: "online_income" },
   {
-    label: "French Immersion",
-    value: "french_immersion",
-    conditions: ["Watch a video in french"],
+    label: "Guitar(Max 2 hours)",
+    value: "guitar",
+    conditions: [
+      "Do drills before starting.",
+      "Guitar is fun but not i have to limit it to 2 hours.",
+      "if night time/early morning play electric guitar else acoustic",
+      "If solos requiring bending then play electric guitar.",
+    ],
   },
-  { label: "Workout", value: "workout" },
-  { label: "8 Hours Sleep", value: "sleep" },
+  {
+    label: "Online Income/job apply",
+    value: "online_income/job",
+    conditions: ["Apply for job.", "Try a method to earn money."],
+  },
+
+  {
+    label: "Workout(30mins manadatory)",
+    value: "workout",
+    conditions: ["30 mins minium spend set timer."],
+  },
+  {
+    label: "Sleep(Before 2am + 8h15m)",
+    value: "sleep",
+    conditions: [
+      "Log last sleep",
+      "Sleep before 2am(No naps at all).",
+      "Total of 8h15m.15m to fall asleep",
+      "Regardless of Weekend/weekdays follow same time/patterns",
+      "No laying in bed unless sleeping.",
+    ],
+  },
   {
     label: "Hydration",
     value: "hydration",
     conditions: [
       "1 full water bottle after wakeup.",
       "1 full water bottle take to bed.",
+      "Every 30 mins take a gulp.",
     ],
   },
-  { label: "French Mock Test", value: "french_mock_test" },
 ];
 
 // Default styling for various calendar date types
@@ -356,11 +402,24 @@ function isActivityLoggedToday(
 }
 
 /**
+ * Check if an activity is logged for yesterday
+ */
+function isActivityLoggedYesterday(
+  successDates: string[],
+  failureDates: string[]
+): boolean {
+  const yesterday = format(subDays(new Date(), 1), "yyyy-MM-dd");
+  const mergedArray = [...successDates, ...failureDates];
+  return mergedArray.includes(yesterday);
+}
+
+/**
  * Get user logged status for a specific activity
  */
 async function getUserLoggedStatus(
   activity: string,
   setAlreadyLogged: (state: boolean) => void,
+  setYesterdayLogged: (state: boolean) => void,
   setLoggedStateFetching: (state: boolean) => void,
   setMarkedDates: (state: any) => void,
   setMonthlyStats: (val: stats) => void,
@@ -411,6 +470,11 @@ async function getUserLoggedStatus(
       setAlreadyLogged(true);
     }
 
+    // Check if already logged yesterday
+    if (isActivityLoggedYesterday(successDates, failureDates)) {
+      setYesterdayLogged(true);
+    }
+
     // Update loading state
     setLoggedStateFetching(false);
   } catch (error) {
@@ -426,6 +490,7 @@ const Streaks = () => {
   );
 
   const [alreadyLogged, setAlreadyLogged] = useState(false);
+  const [yesterdayLogged, setYesterdayLogged] = useState(false);
   const [loggedStateFetching, setLoggedStateFetching] = useState(true);
   const [monthlyStats, setMonthlyStats] = useState<stats>();
   const [streaks, setStreaks] = useState<number>(0);
@@ -434,7 +499,6 @@ const Streaks = () => {
     successDates: string[];
     failureDates: string[];
   }>(null);
-
   const [markedDates, setMarkedDates] = useState({});
   const [allHabitsLogsStatus, setAllHabitsLogsStatus] =
     useState<HabitStatusMap>();
@@ -450,6 +514,7 @@ const Streaks = () => {
     getUserLoggedStatus(
       selectedStreak.value,
       setAlreadyLogged,
+      setYesterdayLogged,
       setLoggedStateFetching,
       setMarkedDates,
       setMonthlyStats,
@@ -459,6 +524,7 @@ const Streaks = () => {
 
     return () => {
       setAlreadyLogged(false);
+      setYesterdayLogged(false);
       setLoggedStateFetching(true);
     };
   }, [selectedStreak]);
@@ -473,10 +539,88 @@ const Streaks = () => {
     setRemainingToBeLOgged(remaining);
   }, [allHabitsLogsStatus]);
 
-  const { DecisionDialog, getDecision } = useDecision();
+  const { DecisionDialog, getDecision } = useDecision({
+    dialogTitle: "Log Today",
+    yesButtonText: "Success",
+    noButtonText: "Failure",
+  });
+
+  // Function to handle logging with date parameter
+  const handleLog = async (isToday: boolean) => {
+    try {
+      const dateToLog = isToday
+        ? format(new Date(), "yyyy-MM-dd")
+        : format(subDays(new Date(), 1), "yyyy-MM-dd");
+
+      if (!dateToLog || !selectedStreak) return;
+
+      const decision = await getDecision();
+
+      if (decision) {
+        await axios.post(url, {
+          event: "addSuccessfulDate",
+          date: dateToLog,
+          activity: selectedStreak?.value,
+        });
+      } else {
+        await axios.post(url, {
+          event: "addFailureDate",
+          date: dateToLog,
+          activity: selectedStreak?.value,
+        });
+      }
+
+      setMonthlyStats((prev) => {
+        if (!prev) return;
+        return {
+          ...prev,
+          success: decision ? prev.success + 1 : prev.success,
+          undoable: decision ? prev.undoable : prev.undoable + 1,
+        };
+      });
+
+      // Update the habit status
+      setAllHabitsLogsStatus((prev: HabitStatusMap | undefined) => {
+        if (!prev) return;
+        // Only update today's status in the habit tracker if logging today
+        if (isToday) {
+          return { ...prev, [selectedStreak.value]: true };
+        }
+        return prev;
+      });
+
+      // Update the calendar
+      setMarkedDates((prev: any) => ({
+        ...prev,
+        [dateToLog]: {
+          customStyles: {
+            container: {
+              borderWidth: 2,
+              borderColor: decision ? "#22c55e" : "#a855f7",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            },
+            text: {
+              color: "white",
+            },
+          },
+        },
+      }));
+
+      // Update the logged status
+      if (isToday) {
+        setAlreadyLogged(true);
+      } else {
+        setYesterdayLogged(true);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
-    <View className="flex flex-1 border-4 bg-[#1F1F1f] flex-col pt-12 px-4">
+    <ScrollView className="flex flex-1 border-4 bg-[#1F1F1f] flex-col pt-12 px-4 ">
       <View>
         <Select
           onValueChange={async (val) => {
@@ -487,8 +631,8 @@ const Streaks = () => {
             setSelectedStreak(value);
           }}
         >
-          <View className="flex flex-row justify-between items-center">
-            <SelectTrigger className=" relative">
+          <View className="flex flex-row justify-between items-center gap-x-2">
+            <SelectTrigger className="relative shrink">
               <View className="flex flex-row items-center gap-x-1 mr-3">
                 <SelectValue
                   className="text-foreground text-sm native:text-lg"
@@ -510,78 +654,45 @@ const Streaks = () => {
             </SelectTrigger>
             {selectedStreak &&
               !loggedStateFetching &&
-              (alreadyLogged ? (
+              (alreadyLogged && yesterdayLogged ? (
                 <View className="flex flex-row items-center gap-x-1">
-                  <Text className="text-xl text-white font-bold">Logged</Text>
+                  <Text className="text-xl text-white font-bold">
+                    All Logged
+                  </Text>
                   <Check color={"green"} strokeWidth={3} />
                 </View>
               ) : (
-                <TouchableOpacity
-                  className=" rounded-md bg-green-500 "
-                  onPress={async () => {
-                    try {
-                      const today = format(new Date(), "yyyy-MM-dd");
-                      if (!today || !selectedStreak) return;
-                      const decision = await getDecision();
-                      if (decision) {
-                        const response = await axios.post(url, {
-                          event: "addSuccessfulDate",
-                          date: today,
-                          activity: selectedStreak?.value,
-                        });
-                      } else {
-                        const response = await axios.post(url, {
-                          event: "addFailureDate",
-                          date: today,
-                          activity: selectedStreak?.value,
-                        });
-                      }
-                      setMonthlyStats((prev) => {
-                        if (!prev) return;
-                        return {
-                          ...prev,
-                          success: decision ? prev.success + 1 : prev.success,
-                          undoable: decision
-                            ? prev.undoable
-                            : prev.undoable + 1,
-                        };
-                      });
-
-                      setAllHabitsLogsStatus(
-                        (prev: HabitStatusMap | undefined) => {
-                          if (!prev) return;
-                          return { ...prev, [selectedStreak.value]: true };
-                        }
-                      );
-
-                      setMarkedDates((prev: any) => ({
-                        ...prev,
-                        [today]: {
-                          customStyles: {
-                            container: {
-                              borderWidth: 2,
-                              borderColor: decision ? "#22c55e" : "#a855f7",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            },
-                            text: {
-                              color: "white",
-                            },
-                          },
-                        },
-                      }));
-
-                      setAlreadyLogged(true);
-                    } catch (error) {
-                      console.log(error);
+                <Select
+                  onValueChange={(val) => {
+                    if (val?.value === "today") {
+                      handleLog(true);
+                    } else if (val?.value === "yesterday") {
+                      handleLog(false);
                     }
                   }}
                 >
-                  <Text className="text-white text-xl font-bold px-4 py-2">
-                    Log today
-                  </Text>
-                </TouchableOpacity>
+                  <SelectTrigger className="rounded-md bg-green-500 px-4 py-2">
+                    <View className="flex flex-row items-center gap-x-1">
+                      <Text className="text-white text-xl font-bold">Log</Text>
+                      <ChevronDown
+                        size={16}
+                        aria-hidden={true}
+                        className="text-white"
+                      />
+                    </View>
+                  </SelectTrigger>
+                  <SelectContent className="w-[200px] -mt-16 max-h-100">
+                    <SelectGroup>
+                      <SelectLabel>Log Options</SelectLabel>
+                      {!alreadyLogged && (
+                        <SelectItem label="Log Today" value="today" />
+                      )}
+                      {!yesterdayLogged && (
+                        <SelectItem label="Log Yesterday" value="yesterday" />
+                      )}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               ))}
           </View>
           <SelectContent className="w-[200px] -mt-16  max-h-100 ">
@@ -618,7 +729,18 @@ const Streaks = () => {
           {selectedStreak?.label}
         </Text>
       </View>
-      <View className="flex justify-center w-full flex-row mt-2">
+      <View className="flex justify-between w-full flex-row mt-4  items-center ">
+        {monthlyStats && (
+          <View className="flex flex-col  gap-y-1  mt-2 ">
+            <Text className="text-xl font-bold text-white">{`Stats of ${monthlyStats.monthName}`}</Text>
+            <Text className="text-green-500 font-semibold text-base">
+              {`SUCCESS: ${monthlyStats.success} / ${monthlyStats.totalDays}`}
+            </Text>
+            <Text className="text-purple-500 font-semibold text-base">
+              {`UNDOABLE: ${monthlyStats.undoable} / ${monthlyStats.totalDays}`}
+            </Text>
+          </View>
+        )}
         <View className="border-[10px] border-[#FCBB3E] rounded-full w-36 h-36 flex items-center justify-center">
           {selectedStreak && (
             <View className="flex flex-col items-center">
@@ -630,7 +752,7 @@ const Streaks = () => {
           )}
         </View>
       </View>
-      <View className="mt-6 flex-shrink mb-2">
+      <View className="mt-6 mb-2 shrink">
         <View className="flex flex-row justify-between my-3">
           <View className="flex flex-row gap-x-2 items-center">
             <View className="w-6 h-6 border-green-500 border-2 rounded-full">
@@ -681,39 +803,23 @@ const Streaks = () => {
           }}
         />
       </View>
-      <View className="flex flex-row justify-between mt-2">
-        <View className="flex flex-col items-start gap-y-1 ">
-          {selectedStreak?.conditions && (
-            <Text className="text-xl font-bold text-white">Conditions</Text>
-          )}
-          {selectedStreak?.conditions &&
-            selectedStreak.conditions.map((item, i) => {
-              return (
-                <View className="flex flex-row items-start gap-x-1" key={i}>
-                  <Text className=" font-bold text-white">{i + 1}.</Text>
-                  <Text className="text-white font-bold">{item}</Text>
-                </View>
-              );
-            })}
-        </View>
-
-        <View>
-          {monthlyStats && (
-            <View className="flex flex-col items-end gap-y-1 grow mt-2">
-              <Text className="text-xl font-bold text-white">{`Stats of ${monthlyStats.monthName}`}</Text>
-              <Text className="text-green-500 font-semibold text-base">
-                {` SUCCESS: ${monthlyStats.success} / ${monthlyStats.totalDays}`}
-              </Text>
-              <Text className="text-purple-500 font-semibold text-base">
-                {` UNDOABLE: ${monthlyStats.undoable} / ${monthlyStats.totalDays}`}
-              </Text>
-            </View>
-          )}
-        </View>
+      <View className="flex flex-col justify-between mt-2 gap-y-3">
+        {selectedStreak?.conditions && (
+          <Text className="text-2xl font-bold text-white">Conditions</Text>
+        )}
+        {selectedStreak?.conditions &&
+          selectedStreak.conditions.map((item, i) => {
+            return (
+              <View className="flex flex-row items-start gap-x-1" key={i}>
+                <Text className=" font-bold text-white">{i + 1}.</Text>
+                <Text className="text-white font-bold ">{item}</Text>
+              </View>
+            );
+          })}
       </View>
 
       <DecisionDialog />
-    </View>
+    </ScrollView>
   );
 };
 

@@ -1,78 +1,35 @@
-import React, { useState } from "react";
+import * as React from "react";
+import { Image, TouchableOpacity } from "react-native";
+import { Asset } from "expo-asset";
+
 import {
-  StyleSheet,
-  View,
-  Image,
-  TouchableOpacity,
-  Modal,
-  TouchableWithoutFeedback,
-  Dimensions,
-} from "react-native";
-
-const ImagePopupComponent = () => {
-  const [isModalVisible, setModalVisible] = useState(false);
-
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
-  };
-
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTrigger,
+} from "~/components/ui/dialog";
+import { Text } from "~/components/ui/text";
+import { ReactNativeZoomableView } from "@openspacelabs/react-native-zoomable-view";
+import { MapIcon } from "lucide-react-native";
+export default function Example() {
   return (
-    <View style={styles.container}>
-      {/* Thumbnail that opens the modal */}
-      <TouchableOpacity onPress={toggleModal}>
-        <Image
-          source={require("../assets/ttcMap.png")}
-          style={styles.thumbnail}
-          resizeMode="contain"
-        />
-      </TouchableOpacity>
-
-      {/* Modal with full image */}
-      <Modal
-        transparent={true}
-        visible={isModalVisible}
-        animationType="fade"
-        onRequestClose={toggleModal}
-      >
-        <TouchableWithoutFeedback onPress={toggleModal}>
-          <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback>
-              <Image
-                source={require("../assets/ttcMap.png")}
-                style={styles.fullImage}
-                resizeMode="contain"
-              />
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
-    </View>
+    <Dialog>
+      <DialogTrigger asChild>
+        <TouchableOpacity>
+          <MapIcon color={"orange"} />
+        </TouchableOpacity>
+      </DialogTrigger>
+      <DialogContent className="flex flex-1  p-2">
+        <ReactNativeZoomableView
+          initialZoom={0.2}
+          maxZoom={2}
+          minZoom={0.2}
+          bindToBorders
+        >
+          <Image source={require("../assets/ttcMap.png")} />
+        </ReactNativeZoomableView>
+      </DialogContent>
+    </Dialog>
   );
-};
-
-const windowWidth = Dimensions.get("window").width;
-const windowHeight = Dimensions.get("window").height;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  thumbnail: {
-    width: 150,
-    height: 150,
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
-  },
-  fullImage: {
-    width: windowWidth * 0.9,
-    height: windowHeight * 0.9,
-  },
-});
-
-export default ImagePopupComponent;
+}

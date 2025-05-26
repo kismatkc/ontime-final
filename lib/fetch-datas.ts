@@ -1,6 +1,8 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import * as Location from "expo-location";
+import { Asset } from "expo-asset";
+import { set } from "date-fns";
 
 interface weatherType {
   timestamp: string;
@@ -13,11 +15,23 @@ interface weatherType {
   sunset?: number; // Added optional sunset field
 }
 
+let url = process.env.EXPO_PUBLIC_BACKEND_URL;
+
+if (process.env.EXPO_PUBLIC_ENVIRONMENT === "development") {
+  url = `${process.env.EXPO_PUBLIC_BACKEND_URL}:3000`;
+}
+
 async function getAlerts(setNews: (data: any) => void) {
   try {
-    const response = await axios.get(
-      "https://puppeter-kismat-kcs-projects.vercel.app/scrape-news"
-    );
+    let scrapingUrl = "";
+    if (process.env.EXPO_PUBLIC_ENVIRONMENT === "development") {
+      scrapingUrl = `${process.env.EXPO_PUBLIC_BACKEND_URL}:3001/scrape-news`;
+    } else {
+      scrapingUrl = `${process.env.EXPO_PUBLIC_BACKEND_URL}/scraper/scrape-news`;
+    }
+
+    const response = await axios.get(scrapingUrl);
+    // const response = await axios.get(`${url}/scrape-news`);
 
     // Process the data to format numbers at the beginning of paragraphs
     const processedData = response.data.data.map((item: string) => {
@@ -42,16 +56,15 @@ async function fetchBusTimes(
   setStops: (data: any) => void
 ) {
   try {
-    const response = await axios.get(
-      "https://puppeter-kismat-kcs-projects.vercel.app/bus-times"
-    );
+    const response = await axios.get(`${url}/bus-times`);
 
     setBusTimings(response.data.data.times);
 
     setStops(response.data.data.stops.toString());
+
     return response.data.data;
   } catch (error) {
-    console.log(error);
+    console.log(JSON.stringify(error, null, 2));
   }
 }
 
@@ -65,13 +78,10 @@ async function fetchWeather(setWeather: (data: any) => void) {
     let { coords } = await Location.getCurrentPositionAsync({});
     const { latitude, longitude } = coords;
 
-    const response = await axios.post(
-      "https://puppeter-kismat-kcs-projects.vercel.app/weather",
-      {
-        lat: latitude,
-        long: longitude,
-      }
-    );
+    const response = await axios.post(`${url}/weather`, {
+      lat: latitude,
+      long: longitude,
+    });
 
     setWeather(response.data);
 
@@ -123,6 +133,12 @@ export const useFetchTtcData = () => {
 
     // Clean up the interval on component unmount
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      await Asset.fromModule(require("../assets/ttcMap.png")).downloadAsync();
+    })();
   }, []);
 
   return { news, busTimings, stops, refreshBusTimes, weather };

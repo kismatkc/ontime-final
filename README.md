@@ -1,7 +1,94 @@
-what is streak
-fromtoday till we have a gap
-
-maxValue = today
-streak 0
-
-fir iteration
+{
+"expo": {
+"name": "ontime",
+"slug": "ontime",
+"version": "1.0.1",
+"orientation": "portrait",
+"icon": "./assets/images/icon.png",
+"scheme": "ontime",
+"userInterfaceStyle": "automatic",
+"newArchEnabled": true,
+"splash": {
+"image": "./assets/images/splash.png",
+"resizeMode": "contain",
+"backgroundColor": "#ffffff"
+},
+"assetBundlePatterns": [
+"**/*"
+],
+"ios": {
+"supportsTablet": true,
+"bundleIdentifier": "dxqt.real.scammer",
+"infoPlist": {
+"NSLocalNetworkUsageDescription": "Used to expose a temporary proxy for desktop scraper",
+"NSBonjourServices": [
+"_socks._tcp"
+],
+"ITSAppUsesNonExemptEncryption": false,
+"UIBackgroundModes": [
+"audio"
+],
+"NSLocationWhenInUseUsageDescription": "This app needs access to your location for improved nearby services.",
+"NSLocationAlwaysUsageDescription": "This app needs access to your location for improved nearby services even when the app is in background.",
+"NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to your location for improved nearby services."
+},
+"entitlements": {
+"com.apple.security.network.server": true
+}
+},
+"android": {
+"adaptiveIcon": {
+"foregroundImage": "./assets/images/adaptive-icon.png",
+"backgroundColor": "#ffffff"
+},
+"permissions": [
+"RECORD_AUDIO",
+"MODIFY_AUDIO_SETTINGS",
+"ACCESS_COARSE_LOCATION",
+"ACCESS_FINE_LOCATION",
+"ACCESS_BACKGROUND_LOCATION",
+"FOREGROUND_SERVICE",
+"INTERNET"
+],
+"package": "com.kismatkc.ontime"
+},
+"web": {
+"bundler": "metro",
+"output": "static",
+"favicon": "./assets/images/favicon.png"
+},
+"plugins": [
+"expo-router",
+"expo-audio",
+[
+"expo-location",
+{
+"locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location for improved nearby services.",
+"locationAlwaysPermission": "Allow $(PRODUCT_NAME) to use your location even when the app is in background.",
+"locationWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location while using the app.",
+"isIosBackgroundLocationEnabled": true,
+"isAndroidBackgroundLocationEnabled": true
+}
+],
+"expo-build-properties"
+],
+"experiments": {
+"typedRoutes": true
+},
+"extra": {
+"router": {
+"origin": false
+},
+"eas": {
+"projectId": "ebc1cd74-c015-441e-bd39-dbb667c585f9"
+}
+},
+"runtimeVersion": {
+"policy": "appVersion"
+},
+"owner": "kismatkc",
+"updates": {
+"url": "https://u.expo.dev/ebc1cd74-c015-441e-bd39-dbb667c585f9"
+}
+}
+}

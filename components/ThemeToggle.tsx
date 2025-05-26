@@ -12,13 +12,13 @@ export function ThemeToggle() {
   }
 
   return (
-    <Pressable onPress={toggleColorScheme}>
+    <Pressable onPress={toggleColorScheme} className="z-[60]">
       {({ pressed }) => (
         <View style={{ opacity: pressed ? 0.7 : 1 }}>
           {isDarkColorScheme ? (
-            <MoonStar size={25} strokeWidth={1.25} />
+            <MoonStar size={25} strokeWidth={1.25} color={"white"} />
           ) : (
-            <Sun size={25} strokeWidth={1.25} />
+            <Sun size={25} strokeWidth={1.25} color={"black"} />
           )}
         </View>
       )}

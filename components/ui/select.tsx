@@ -7,7 +7,7 @@ import { ChevronDown } from "~/lib/icons/ChevronDown";
 import { ChevronUp } from "~/lib/icons/ChevronUp";
 import { cn } from "~/lib/utils";
 
-type Option = SelectPrimitive.Option;
+export type Option = SelectPrimitive.Option;
 
 const Select = SelectPrimitive.Root;
 

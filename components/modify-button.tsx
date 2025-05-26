@@ -33,7 +33,7 @@ const ModifyStops = () => {
   };
 
   return (
-    <View className="flex flex-row items-center gap-x-2 my-2 flex-wrap gap-y-2 ">
+    <View className="flex flex-row items-center gap-x-2 my-2 flex-wrap gap-y-2 mt-4">
       <AnimatedInput
         value={value}
         onChangeText={(value) => {
