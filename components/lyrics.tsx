@@ -32,8 +32,8 @@ async function fetchLyricsFromAPI(
 }
 
 interface Props {
-  trackId: string | null;
-  trackName: string | null;
+  trackId?: string | null;
+  trackName?: string | null;
 }
 
 const Lyrisc: React.FC<Props> = ({ trackId, trackName }) => {

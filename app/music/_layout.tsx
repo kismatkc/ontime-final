@@ -3,6 +3,7 @@ import { Tabs } from "expo-router";
 import {
   Download,
   Heart,
+  ListMusicIcon,
   Music,
   Play,
   SkipBack,
@@ -47,6 +48,15 @@ const MusicLayout = ({}) => {
             title: "songs",
             tabBarIcon: ({ size, color }) => (
               <Music size={size} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="lyrics/index"
+          options={{
+            title: "lyrisc",
+            tabBarIcon: ({ size, color }) => (
+              <ListMusicIcon size={size} color={color} />
             ),
           }}
         />
