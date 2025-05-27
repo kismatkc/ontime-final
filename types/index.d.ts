@@ -3,4 +3,5 @@ export interface offlineSong {
   title: string;
   url: string;
   artist: string;
+  lyrics?: string[];
 }

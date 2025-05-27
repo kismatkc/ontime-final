@@ -30,7 +30,7 @@ export async function saveMp3ToDevice({
     const { DocumentDir } = fs.dirs; // iOS sandboxed Documents folder
 
     // wavBuffer is your Buffer from ffmpeg conversion
-    const filePath = `${DocumentDir}/downloads/${title}.wav`;
+    const filePath = `${DocumentDir}/downloads/${title}.mp3`;
     await RNFetchBlob.fs.writeFile(filePath, base64Buffer, "base64");
     const offlineSong: offlineSong = {
       id,
@@ -38,11 +38,10 @@ export async function saveMp3ToDevice({
       artist: author || "Unknown",
       url: filePath,
     };
-    console.log("saveMp3ToDevice: offlineSong", offlineSong);
 
     pushNewSong(offlineSong);
 
-    return `file://${filePath}`;
+    return offlineSong;
   } catch (error) {
     console.log("Error saving file:", error);
   }
@@ -59,8 +58,8 @@ export async function listDownloadedSongs() {
 
     const audioFiles = allItems.filter(
       (name) =>
-        name.toLowerCase().endsWith(".wav") ||
         name.toLowerCase().endsWith(".mp3") ||
+        name.toLowerCase().endsWith(".wav") ||
         name.toLowerCase().endsWith(".m4a")
     );
 

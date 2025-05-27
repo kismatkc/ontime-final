@@ -18,7 +18,7 @@ import {
   Guitar,
   X,
 } from "lucide-react-native";
-import { useTrackStore } from "~/hooks/useTrackStore";
+import { useTrackStore } from "~/zustand_hooks/useTrackStore";
 import MusicProgress from "./music-progress";
 import { MovingText } from "./moving-text";
 import Lyrisc from "./lyrics";
@@ -176,7 +176,7 @@ const MainPlayer = () => {
         </View>
       </View>
 
-      <Lyrisc trackName={track?.title || null} />
+      <Lyrisc trackName={track?.title || null} trackId={track?.id || ""} />
       <MusicProgress />
 
       {/* ─────────── controls row ─────────── */}

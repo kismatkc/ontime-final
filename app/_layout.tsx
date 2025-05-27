@@ -22,7 +22,7 @@ import { ArrowLeft } from "lucide-react-native";
 import * as Location from "expo-location";
 import { useEffect, useState } from "react";
 import { Alert, Linking } from "react-native";
-import { useTrackStore } from "~/hooks/useTrackStore";
+import { useTrackStore } from "~/zustand_hooks/useTrackStore";
 
 // Add this function to your app's initialization
 async function requestAndVerifyLocationPermission() {

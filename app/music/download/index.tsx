@@ -6,6 +6,7 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 
 import { getMp3FromYouTube, saveMp3ToDevice } from "~/lib/audioControllers";
+import { useTrackStore } from "~/zustand_hooks/useTrackStore";
 
 function isNotYouTubeUrl(url: string | undefined) {
   if (!url) return true;
@@ -21,7 +22,9 @@ const DownloadSongs = ({}) => {
   const [downloadButton, setDownloadButton] = useState<boolean>(
     isNotYouTubeUrl(youtbeUrl)
   );
+
   const [downloading, setDownloading] = useState(false);
+  const { setNewDownloadedSong } = useTrackStore();
 
   return (
     <View className=" flex flex-col justify-center gap-y-4 px-2 bg-[#0A071E] h-full">
@@ -40,8 +43,6 @@ const DownloadSongs = ({}) => {
         disabled={downloadButton}
         onPress={async () => {
           try {
-            console.log("Downloading...");
-
             setDownloading(true);
             if (!youtbeUrl) return;
             setDownloadButton(true);
@@ -56,7 +57,11 @@ const DownloadSongs = ({}) => {
               });
               return;
             }
-            await saveMp3ToDevice(response as any);
+            const newSong: any = await saveMp3ToDevice(response as any);
+
+            if (newSong) {
+              setNewDownloadedSong(newSong);
+            }
 
             Toast.show({
               type: "success",
@@ -65,6 +70,7 @@ const DownloadSongs = ({}) => {
               swipeable: true,
               visibilityTime: 2000,
             });
+
             router.push("/music");
             setDownloading(false);
             setYoutbeUrl(undefined);

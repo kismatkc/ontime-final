@@ -2,12 +2,12 @@
   "expo": {
     "name": "ontime",
     "slug": "ontime",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "ontime",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",

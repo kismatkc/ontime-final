@@ -24,11 +24,13 @@ if (process.env.EXPO_PUBLIC_ENVIRONMENT === "development") {
 async function getAlerts(setNews: (data: any) => void) {
   try {
     let scrapingUrl = "";
+
     if (process.env.EXPO_PUBLIC_ENVIRONMENT === "development") {
       scrapingUrl = `${process.env.EXPO_PUBLIC_BACKEND_URL}:3001/scrape-news`;
     } else {
       scrapingUrl = `${process.env.EXPO_PUBLIC_BACKEND_URL}/scraper/scrape-news`;
     }
+    console.log(scrapingUrl);
 
     const response = await axios.get(scrapingUrl);
     // const response = await axios.get(`${url}/scrape-news`);

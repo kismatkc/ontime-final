@@ -14,6 +14,8 @@
     "expo-env.d.ts",
     "nativewind-env.d.ts",
     "lib/service.js",
-    "lib/get-mp3.js"
+    "lib/get-mp3.js",
+    "index.js",
+    "lib/playerService.js"
   ]
 }

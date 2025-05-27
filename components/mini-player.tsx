@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import { Animated, Image, Pressable, StyleSheet, View } from "react-native";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react-native";
-import { useTrackStore } from "~/hooks/useTrackStore";
+import { useTrackStore } from "~/zustand_hooks/useTrackStore";
 import { MovingText } from "./moving-text";
 
 /* ——————————————————————————————————————————— */

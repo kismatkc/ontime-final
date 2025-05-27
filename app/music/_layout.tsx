@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import "../../loggerIgnore";
+
 import {
   Download,
   Heart,
@@ -11,7 +11,7 @@ import {
 import { Image, Text, View } from "react-native";
 import MainPlayer from "~/components/main-player";
 import MiniPlayer from "~/components/mini-player";
-import { useTrackStore } from "~/hooks/useTrackStore";
+import { useTrackStore } from "~/zustand_hooks/useTrackStore";
 
 const MusicLayout = ({}) => {
   const { showMainPlayer, showMiniPlayer } = useTrackStore();

@@ -1,94 +1,110 @@
 {
-"expo": {
 "name": "ontime",
-"slug": "ontime",
-"version": "1.0.1",
-"orientation": "portrait",
-"icon": "./assets/images/icon.png",
-"scheme": "ontime",
-"userInterfaceStyle": "automatic",
-"newArchEnabled": true,
-"splash": {
-"image": "./assets/images/splash.png",
-"resizeMode": "contain",
-"backgroundColor": "#ffffff"
+"main": "index.js",
+"version": "1.0.3",
+"scripts": {
+"generate:env:dev": "doppler secrets download --project ontime-frontend --config dev --format env --no-file > .env.development",
+"generate:env:prd": "doppler secrets download --project ontime-frontend --config prd --format env --no-file > .env.production",
+"dev": "npm run generate:env:dev && npx expo start -c",
+"devTunnel": "expo start --tunnel",
+"build": "eas build --profile production",
+"update": "npm run generate:env:prd && eas update --platform ios",
+"dev:web": "expo start -c --web",
+"dev:android": "expo start -c --android",
+"android": "expo run:android",
+"ios": "expo run:ios",
+"web": "expo start -c --web",
+"clean": "rm -rf .expo node_modules",
+"postinstall": "npx tailwindcss -i ./global.css -o ./node_modules/.cache/nativewind/global.css",
+"start": "expo start --dev-client"
 },
-"assetBundlePatterns": [
-"**/*"
-],
-"ios": {
-"supportsTablet": true,
-"bundleIdentifier": "dxqt.real.scammer",
-"infoPlist": {
-"NSLocalNetworkUsageDescription": "Used to expose a temporary proxy for desktop scraper",
-"NSBonjourServices": [
-"_socks._tcp"
-],
-"ITSAppUsesNonExemptEncryption": false,
-"UIBackgroundModes": [
-"audio"
-],
-"NSLocationWhenInUseUsageDescription": "This app needs access to your location for improved nearby services.",
-"NSLocationAlwaysUsageDescription": "This app needs access to your location for improved nearby services even when the app is in background.",
-"NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to your location for improved nearby services."
+"dependencies": {
+"@miblanchard/react-native-slider": "^2.6.0",
+"@openspacelabs/react-native-zoomable-view": "^2.4.2",
+"@pondwader/socks5-server": "^1.0.10",
+"@react-native-async-storage/async-storage": "^2.1.2",
+"@react-native-clipboard/clipboard": "^1.16.2",
+"@react-native-community/datetimepicker": "^8.3.0",
+"@react-native-community/slider": "^4.5.6",
+"@react-native-menu/menu": "^1.2.3",
+"@react-navigation/native": "^7.0.0",
+"@rn-primitives/alert-dialog": "^1.2.0",
+"@rn-primitives/avatar": "~1.1.0",
+"@rn-primitives/dialog": "^1.1.0",
+"@rn-primitives/dropdown-menu": "^1.1.0",
+"@rn-primitives/label": "^1.2.0",
+"@rn-primitives/portal": "~1.1.0",
+"@rn-primitives/progress": "~1.1.0",
+"@rn-primitives/select": "^1.1.0",
+"@rn-primitives/slot": "~1.1.0",
+"@rn-primitives/tabs": "^1.1.0",
+"@rn-primitives/tooltip": "~1.1.0",
+"@rn-primitives/types": "~1.1.0",
+"axios": "^1.8.4",
+"buffer": "^6.0.3",
+"class-variance-authority": "^0.7.0",
+"clsx": "^2.1.0",
+"date-fns": "^4.1.0",
+"expo": "^53.0.0",
+"expo-audio": "^0.4.4",
+"expo-av": "~15.1.4",
+"expo-build-properties": "~0.14.6",
+"expo-linear-gradient": "~14.1.4",
+"expo-linking": "~7.1.4",
+"expo-location": "~18.1.4",
+"expo-navigation-bar": "~4.2.4",
+"expo-notifications": "~0.31.1",
+"expo-router": "~5.0.5",
+"expo-splash-screen": "~0.30.8",
+"expo-status-bar": "~2.2.3",
+"expo-system-ui": "~5.0.7",
+"expo-updates": "~0.28.12",
+"express": "^5.1.0",
+"ffmpeg-static": "^5.2.0",
+"fluent-ffmpeg": "^2.1.3",
+"html-entities": "^2.6.0",
+"https-browserify": "^1.0.0",
+"lucide-react-native": "^0.378.0",
+"nativewind": "^4.1.23",
+"process": "^0.11.10",
+"react": "19.0.0",
+"react-dom": "19.0.0",
+"react-native": "0.79.2",
+"react-native-awesome-slider": "^2.9.0",
+"react-native-blob-util": "^0.21.2",
+"react-native-calendars": "^1.1311.0",
+"react-native-element-dropdown": "^2.12.4",
+"react-native-fast-image": "^8.6.3",
+"react-native-fs": "^2.20.0",
+"react-native-gesture-handler": "^2.25.0",
+"react-native-loader-kit": "^2.0.8",
+"react-native-mmkv": "^3.2.0",
+"react-native-reanimated": "~3.17.4",
+"react-native-safe-area-context": "5.4.0",
+"react-native-screens": "~4.10.0",
+"react-native-svg": "15.11.2",
+"react-native-tcp-socket": "^6.3.0",
+"react-native-toast-message": "^2.2.1",
+"react-native-track-player": "^4.1.1",
+"react-native-url-polyfill": "^2.0.0",
+"react-native-web": "^0.20.0",
+"react-native-ytdl-ts": "^0.0.25",
+"readable-stream": "^4.7.0",
+"stream-http": "^3.2.0",
+"tailwind-merge": "^2.2.1",
+"tailwindcss": "3.3.5",
+"tailwindcss-animate": "^1.0.7",
+"ts-pattern": "^5.7.0",
+"url": "^0.11.4",
+"with-react-native-tcp-socket": "^1.0.1",
+"youtubei.js": "^13.4.0",
+"zustand": "^4.4.7"
 },
-"entitlements": {
-"com.apple.security.network.server": true
-}
+"devDependencies": {
+"@babel/core": "^7.26.0",
+"@types/react": "~19.0.10",
+"@types/react-native": "^0.73.0",
+"typescript": "^5.3.3"
 },
-"android": {
-"adaptiveIcon": {
-"foregroundImage": "./assets/images/adaptive-icon.png",
-"backgroundColor": "#ffffff"
-},
-"permissions": [
-"RECORD_AUDIO",
-"MODIFY_AUDIO_SETTINGS",
-"ACCESS_COARSE_LOCATION",
-"ACCESS_FINE_LOCATION",
-"ACCESS_BACKGROUND_LOCATION",
-"FOREGROUND_SERVICE",
-"INTERNET"
-],
-"package": "com.kismatkc.ontime"
-},
-"web": {
-"bundler": "metro",
-"output": "static",
-"favicon": "./assets/images/favicon.png"
-},
-"plugins": [
-"expo-router",
-"expo-audio",
-[
-"expo-location",
-{
-"locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location for improved nearby services.",
-"locationAlwaysPermission": "Allow $(PRODUCT_NAME) to use your location even when the app is in background.",
-"locationWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location while using the app.",
-"isIosBackgroundLocationEnabled": true,
-"isAndroidBackgroundLocationEnabled": true
-}
-],
-"expo-build-properties"
-],
-"experiments": {
-"typedRoutes": true
-},
-"extra": {
-"router": {
-"origin": false
-},
-"eas": {
-"projectId": "ebc1cd74-c015-441e-bd39-dbb667c585f9"
-}
-},
-"runtimeVersion": {
-"policy": "appVersion"
-},
-"owner": "kismatkc",
-"updates": {
-"url": "https://u.expo.dev/ebc1cd74-c015-441e-bd39-dbb667c585f9"
-}
-}
+"private": true
 }

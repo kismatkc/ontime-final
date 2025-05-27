@@ -158,3 +158,23 @@ export async function filterByTitle(query?: string): Promise<offlineSong[]> {
     return await loadSongs();
   }
 }
+
+/** Get cached lyrics for a song (or null if absent) */
+export async function getLyricsById(songId: string): Promise<string[] | null> {
+  const songs = await loadSongs();
+  const song = songs.find((s) => s.id === songId);
+  return song?.lyrics ?? null;
+}
+
+/** Save / overwrite lyrics for a song */
+export async function saveLyricsById(
+  songId: string,
+  lyrics: string[]
+): Promise<void> {
+  const songs = await loadSongs();
+  const idx = songs.findIndex((s) => s.id === songId);
+  if (idx === -1) return; // song not stored offline
+
+  songs[idx] = { ...songs[idx], lyrics }; // overwrite or add
+  await saveSongs(songs);
+}
