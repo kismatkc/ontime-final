@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Image, TouchableOpacity } from "react-native";
 import { Input } from "~/components/ui/input";
 import { TrackType, useTrackStore } from "~/zustand_hooks/useTrackStore";
 import { loadSongs, deleteSongById } from "~/lib/offlineStorage";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +22,9 @@ const Songs = () => {
     skipToTrack,
     play,
     newDownloadedSong,
+
     setNewDownloadedSong,
+    showMiniPlayer,
   } = useTrackStore();
 
   const [songs, setSongs] = useState<TrackType[]>([]);
@@ -110,7 +112,7 @@ const Songs = () => {
       </View>
 
       {/* ── Song list ─────────────────────────────────────────────── */}
-      <ScrollView className={`mt-6 flex-1 ${track ? "mb-32" : ""}`}>
+      <ScrollView className={`mt-12 flex-1  ${showMiniPlayer ? "mb-32" : ""}`}>
         {songs.length === 0 ? (
           <Text className="text-center text-[#909097] text-xl mt-8">
             No songs found
@@ -157,6 +159,14 @@ const Songs = () => {
                 </DropdownMenuTrigger>
 
                 <DropdownMenuContent className="-mt-16">
+                  <DropdownMenuItem>
+                    <Edit color="red" size={16} />
+                    <EditTitleAndAuthor
+                      songTitle={song.title}
+                      songAuthor={song.artist}
+                      songId={song.id}
+                    />
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     onPress={async () => {
                       await deleteSongById(song.id);
@@ -166,15 +176,6 @@ const Songs = () => {
                   >
                     <Trash color="red" size={16} />
                     <Text className="font-bold text-red-500">Delete</Text>
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem>
-                    <Edit color="red" size={16} />
-                    <EditTitleAndAuthor
-                      songTitle={song.title}
-                      songAuthor={song.artist}
-                      songId={song.id}
-                    />
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

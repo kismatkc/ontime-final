@@ -1,11 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import {
   Select,
   SelectContent,
@@ -31,7 +25,6 @@ if (process.env.EXPO_PUBLIC_ENVIRONMENT === "development") {
 }
 
 const minDate = "2025-05-10";
-const totalDays = new Date(2025).getDate();
 const MONTH_NAMES = [
   "January",
   "February",
@@ -66,6 +59,7 @@ type HabitStatusMap = {
   online_income: boolean;
   workout: boolean;
   sleep: boolean;
+  basic_hygeine: boolean;
 };
 
 type stats = {
@@ -87,6 +81,7 @@ const streakItems: OptionExtended[] = [
       "Only valid if logged before 8pm.",
       "1.5 hour minimum.",
       "Watch a video in french/Write something in french.",
+      "The stopwatch should be a complete 1.5 hours.",
     ],
   },
   {
@@ -113,9 +108,9 @@ const streakItems: OptionExtended[] = [
     value: "guitar",
     conditions: [
       "Do drills before starting.",
-      "Guitar is fun but not i have to limit it to 2 hours.",
       "if night time/early morning play electric guitar else acoustic",
       "If solos requiring bending then play electric guitar.",
+      "The session should be max 2 hours.Track using stopwatch.",
     ],
   },
   {
@@ -125,9 +120,19 @@ const streakItems: OptionExtended[] = [
   },
 
   {
-    label: "Workout(30mins manadatory)",
+    label: "Workout(30mins intense not just spending time)",
     value: "workout",
     conditions: ["30 mins minium spend set timer."],
+  },
+  {
+    label: "Basic hygeine",
+    value: "basic_hygeine",
+    conditions: [
+      "Twice a day brush teeth",
+      "Wash face once must",
+      "Tret/nicainamide/anti-aging/hydrating creams",
+      "Style/moisturize hair",
+    ],
   },
   {
     label: "Sleep(Before 2am + 8h15m)",
@@ -138,6 +143,15 @@ const streakItems: OptionExtended[] = [
       "Total of 8h15m.15m to fall asleep",
       "Regardless of Weekend/weekdays follow same time/patterns",
       "No laying in bed unless sleeping.",
+    ],
+  },
+  {
+    label: "Allocate Sleep 8h15m + Workout 30m a day before",
+    value: "ideal_sleep",
+    conditions: [
+      "Make a predication",
+      "Be honest with this one",
+      "this will improve your life",
     ],
   },
   {
